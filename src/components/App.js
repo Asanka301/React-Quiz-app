@@ -11,12 +11,12 @@ import Progress from "./Progress";
 import FinishScreen from "./FinishScreen";
 import Footer from "./Footer";
 import Timer from "./Timer";
+import questions from "./Data"; // Importing questions from data.js
 
 const SECS_PER_QUESTION = 30;
 
 const initialState = {
   questions: [],
-
   //'loading', 'error', 'ready', 'active', 'finisher'
   status: "loading",
   index: 0,
@@ -45,7 +45,7 @@ function reducer(state, action) {
         secondRemaining: state.questions.length * SECS_PER_QUESTION,
       };
     case "newAnswer":
-      const question = state.questions.at(state.index);
+      const question = state.questions[state.index]; // Fixed accessing array elements
 
       return {
         ...state,
@@ -75,22 +75,28 @@ function reducer(state, action) {
 
 export default function App() {
   const [
-    { questions, status, index, answer, points, secondRemaining },
+    {
+      questions: fetchedQuestions,
+      status,
+      index,
+      answer,
+      points,
+      secondRemaining,
+    },
     dispatch,
   ] = useReducer(reducer, initialState);
 
-  const numQuestions = questions?.length;
-  const maxPossiblePoints = questions?.reduce(
+  const numQuestions = fetchedQuestions?.length;
+  const maxPossiblePoints = fetchedQuestions?.reduce(
     (prev, cur) => prev + cur.points,
     0
   );
 
-  useEffect(function () {
-    fetch("http://localhost:8000/questions")
-      .then((res) => res.json())
-      .then((data) => dispatch({ type: "dataRecieved", payload: data }))
-      .catch((err) => dispatch({ type: "dataFailed" }));
+  useEffect(() => {
+    // No fetch call needed since data is imported directly
+    dispatch({ type: "dataRecieved", payload: questions });
   }, []);
+
   return (
     <div className="app">
       <Header />
@@ -110,7 +116,7 @@ export default function App() {
               answer={answer}
             />
             <Question
-              question={questions[index]}
+              question={fetchedQuestions[index]}
               dispatch={dispatch}
               answer={answer}
             />
